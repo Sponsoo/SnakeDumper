@@ -2,6 +2,7 @@
 
 namespace Digilist\SnakeDumper\Configuration;
 
+use Digilist\SnakeDumper\Exception\ConfigurationException;
 use Doctrine\DBAL\Connection;
 
 class DatabaseConfiguration extends AbstractConfiguration
@@ -137,6 +138,14 @@ class DatabaseConfiguration extends AbstractConfiguration
     /**
      * @return array
      */
+    public function getCustomTypes()
+    {
+        return $this->get('custom_types');
+    }
+
+    /**
+     * @return array
+     */
     public function getPdoOptions()
     {
         return $this->get('pdo_options');
@@ -161,6 +170,16 @@ class DatabaseConfiguration extends AbstractConfiguration
             $this->ensureHas('password');
             $this->ensureHas('user');
             $this->ensureHas('charset');
+
+            if (!isset($config['custom_types'])) {
+                $config['custom_types'] = array();
+            }
+
+            foreach ($config['custom_types'] as $customType) {
+                if (!isset($customType['class'])) {
+                    throw ConfigurationException::createEnsureHasException('class');
+                }
+            }
         }
     }
 }

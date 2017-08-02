@@ -10,6 +10,7 @@ use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Platforms\MySqlPlatform;
+use Doctrine\DBAL\Types\Type;
 use PDO;
 
 class ConnectionHandler
@@ -126,6 +127,8 @@ class ConnectionHandler
         $this->connection = DriverManager::getConnection($connectionParams, $dbalConfig);
         $this->connection->connect();
 
+        $this->registerCustomTypes();
+
         $this->connection->getSchemaManager();
 
         $this->initPlatformAdjustment($this->connection);
@@ -153,5 +156,15 @@ class ConnectionHandler
         }
 
         $this->platformAdjustment = new DummyAdjustment($this);
+    }
+
+    private function registerCustomTypes() {
+        foreach ($this->config->getCustomTypes() as $typeName => $config) {
+            $this->registerCustomType($typeName, $config);
+        }
+    }
+
+    private function registerCustomType($typeName, array $config) {
+        Type::addType($typeName, $config['class']);
     }
 }
