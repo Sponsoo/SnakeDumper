@@ -25,8 +25,13 @@ class DumpCommand extends Command
             ->addArgument('config', InputArgument::REQUIRED, 'The path to your config file.')
             ->addOption('progress', null, InputOption::VALUE_NONE, 'Show a progress bar')
             ->addOption('disable-limits', null, InputOption::VALUE_NONE, 'Create a full database dump')
-            ->addOption('dbname', null, InputOption::VALUE_REQUIRED, 'Override the name of database that should be dumped')
+            ->addOption('disable-structure', null, InputOption::VALUE_NONE, 'Create a dump containing data only')
+            ->addOption('host', 'H', InputOption::VALUE_REQUIRED, 'Override the configured host')
+            ->addOption('port', 'P', InputOption::VALUE_REQUIRED, 'Override the configured port')
+            ->addOption('user', 'u', InputOption::VALUE_REQUIRED, 'Override the configured user')
             ->addOption('password', 'p', InputOption::VALUE_REQUIRED, 'Override the configured password')
+            ->addOption('output', 'o', InputOption::VALUE_REQUIRED, 'Override the configured output path')
+            ->addOption('dbname', null, InputOption::VALUE_REQUIRED, 'Override the name of database that should be dumped')
         ;
     }
 
@@ -69,7 +74,7 @@ class DumpCommand extends Command
             throw new \InvalidArgumentException('Cannot find configuration file: ' . $configArg);
         }
 
-        $config = Yaml::parse(file_get_contents($configFile));
+        $config = Yaml::parse(file_get_contents($configFile), Yaml::PARSE_CONSTANT);
 
         $processor = new Processor();
         $configuration = new SnakeConfigurationTree();
@@ -87,18 +92,34 @@ class DumpCommand extends Command
      * @param DumperConfigurationInterface $config
      * @param InputInterface               $input
      */
-    private function overrideConfigs(DumperConfigurationInterface $config, InputInterface $input)
+    private function overrideConfigs(SqlDumperConfiguration $config, InputInterface $input)
     {
-        if ($input->getOption('dbname') !== null) {
-            $config->getDatabaseConfig()->setDatabaseName($input->getOption('dbname'));
+        if (($dbname = $input->getOption('dbname')) !== null) {
+            $config->getDatabaseConfig()->setDatabaseName($dbname);
         }
-        if ($input->getOption('password') !== null) {
-            $config->getDatabaseConfig()->setPassword($input->getOption('password'));
+        if (($user = $input->getOption('user')) !== null) {
+            $config->getDatabaseConfig()->setUser($user);
+        }
+        if (($password = $input->getOption('password')) !== null) {
+            $config->getDatabaseConfig()->setPassword($password);
+        }
+        if (($host = $input->getOption('host')) !== null) {
+            $config->getDatabaseConfig()->setHost($host);
+        }
+        if (($port = $input->getOption('port')) !== null) {
+            $config->getDatabaseConfig()->setPort($port);
         }
         if ($input->getOption('disable-limits')) {
             foreach ($config->getTableConfigs() as $tableConfig) {
                 $tableConfig->setLimit(null);
             }
+        }
+        if ($input->getOption('disable-structure')) {
+            $config->setIgnoreStructure(true);
+        }
+        if (($path = $input->getOption('output')) !== null) {
+            $config->getOutputConfig()->setFile($path);
+            $config->getOutputConfig()->setGzip(strrpos($path, '.gz') === strlen($path) - 3);
         }
     }
 }

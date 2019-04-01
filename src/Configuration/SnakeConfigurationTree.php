@@ -50,6 +50,10 @@ class SnakeConfigurationTree implements ConfigurationInterface
                             ->end()
                         ->end()
                     ->end()
+                    ->arrayNode('pdo_options')
+                        ->prototype('scalar')
+                        ->end()
+                    ->end()
                 ->end()
             ->end()
         ;

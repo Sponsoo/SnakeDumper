@@ -10,4 +10,4 @@ CREATE TABLE `RandomTable` (`id` INT AUTO_INCREMENT NOT NULL, `name` VARCHAR(10)
 INSERT INTO `Customer` (`id`, `name`, `test`) VALUES ('1', 'Foobar', 'today'), ('2', 'Foobar', 'yesterday'), ('3', 'Foobar', 'tomorrow');
 INSERT INTO `Customer` (`id`, `name`, `test`) VALUES ('4', 'Foobar', 'always');
 INSERT INTO `Billing` (`id`, `customer_id`, `product`, `amount`) VALUES ('1', '1', 'IT', '42'), ('2', '1', NULL, '1337'), ('3', '2', 'Some stuff', '1337');
-ALTER TABLE `Billing` ADD CONSTRAINT `customer_id` FOREIGN KEY (`customer_id`) REFERENCES `Customer` (`id`);
+ALTER TABLE `Billing` ADD CONSTRAINT `customer_id` FOREIGN KEY (`customer_id`) REFERENCES `Customer` (`id`) ON UPDATE CASCADE ON DELETE SET NULL;

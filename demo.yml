@@ -5,11 +5,14 @@ output:
     gzip: false
 database:
     driver: pdo_mysql
-    host: localhost
+    host: 127.0.0.1
     user: root
     password: ''
     dbname: demo
     charset: UTF8
+    pdo_options:
+        !php/const PDO::MYSQL_ATTR_SSL_CA: './path-to-ca.pem'
+        !php/const PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT: true
 
 table_white_list:
     - foo
@@ -46,6 +49,3 @@ tables:
         converters:
             name:
                 - JohnDoe
-    foo_depends:
-        filters:
-            - [depends, foo_id, foo.id] # Column foo_id has a foreign key on foo.id

@@ -6,8 +6,9 @@ use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Types\Type;
+use PHPUnit\Framework\TestCase;
 
-abstract class AbstractSqlTest extends \PHPUnit_Framework_TestCase
+abstract class AbstractSqlTest extends TestCase
 {
 
     const DBNAME = 'snakedumper';
@@ -41,10 +42,11 @@ abstract class AbstractSqlTest extends \PHPUnit_Framework_TestCase
 
         // Use MySQL instead.
         $this->connection = DriverManager::getConnection(array(
-            'user'     => 'root',
+            'user' => 'root',
             'password' => '',
-            'host'     => '127.0.0.1',
-            'driver'   => 'pdo_mysql',
+            'host' => '127.0.0.1',
+            'driver' => 'pdo_mysql',
+            'wrapperClass' => \Digilist\SnakeDumper\Dumper\Bridge\Doctrine\DBAL\Connection::class,
         ));
 
         $this->connection->exec('DROP DATABASE IF EXISTS ' . self::DBNAME);
@@ -80,7 +82,7 @@ abstract class AbstractSqlTest extends \PHPUnit_Framework_TestCase
             customer_id INTEGER,
             product VARCHAR(100),
             amount REAL,
-            CONSTRAINT customer_id FOREIGN KEY (customer_id) REFERENCES Customer(id)
+            CONSTRAINT customer_id FOREIGN KEY (customer_id) REFERENCES Customer(id) ON UPDATE CASCADE ON DELETE SET NULL
         )');
         $pdo->query('CREATE INDEX billing_product ON Billing (product)');
 

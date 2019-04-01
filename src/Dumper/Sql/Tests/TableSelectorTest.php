@@ -4,6 +4,7 @@ namespace Digilist\SnakeDumper\Dumper\Sql\Tests;
 
 use Digilist\SnakeDumper\Configuration\SqlDumperConfiguration;
 use Digilist\SnakeDumper\Configuration\Table\TableConfiguration;
+use Digilist\SnakeDumper\Dumper\Sql\Dumper\StructureDumper;
 use Digilist\SnakeDumper\Dumper\Sql\IdentifierQuoter;
 use Digilist\SnakeDumper\Dumper\Sql\TableSelector;
 
@@ -62,5 +63,25 @@ class TableSelectorTest extends AbstractSqlTest
         $this->assertEquals(1, count($billingTable->getForeignKeys()));
         $this->assertEquals('customer_id', $billingTable->getForeignKey('customer_id')->getName());
         $this->assertEquals('`customer_id`', $billingTable->getForeignKey('customer_id')->getQuotedName($this->platform));
+    }
+
+    /**
+     * Tests that the dumper does not get confused by column comments that indicate custom doctrine types (which are
+     * not registered).
+     *
+     * @test
+     */
+    public function testDoctrineCustomTypes()
+    {
+        $pdo = $this->connection->getWrappedConnection();
+        $pdo->query('CREATE TABLE custom_doctrine_type (
+                         foobar VARCHAR(255) NOT NULL COMMENT \'(DC2Type:example)\'
+                     )');
+
+        $tableSelector = new TableSelector($this->connection);
+        $tables = $tableSelector->findTablesToDump(new SqlDumperConfiguration());
+
+        $this->assertEquals('string', $tables[0]->getColumn('foobar')->getType()->getName());
+        $this->assertEquals('(DC2Type:example)', $tables[0]->getColumn('foobar')->getComment());
     }
 }
